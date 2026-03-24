@@ -1,0 +1,71 @@
+import java.util.*;
+
+class BookingSystem {
+
+    private Queue<Reservation> queue = new LinkedList<>();
+    private Map<String, Integer> inventory = new HashMap<>();
+
+    public BookingSystem() {
+        inventory.put("Single Room", 2);
+        inventory.put("Double Room", 1);
+    }
+
+    public synchronized void addRequest(Reservation r) {
+        queue.add(r);
+        System.out.println(Thread.currentThread().getName() + " added: " + r);
+    }
+
+    public synchronized void processRequest() {
+
+        if (queue.isEmpty()) return;
+
+        Reservation r = queue.poll();
+        String type = r.getRoomType();
+
+        int available = inventory.getOrDefault(type, 0);
+
+        if (available > 0) {
+            inventory.put(type, available - 1);
+            System.out.println(Thread.currentThread().getName() +
+                    " confirmed: " + r);
+        } else {
+            System.out.println(Thread.currentThread().getName() +
+                    " rejected: " + r);
+        }
+    }
+}
+
+class BookingThread extends Thread {
+
+    private BookingSystem system;
+
+    public BookingThread(BookingSystem system, String name) {
+        super(name);
+        this.system = system;
+    }
+
+    public void run() {
+
+        system.addRequest(new Reservation(getName(), "Single Room"));
+        system.processRequest();
+
+        system.addRequest(new Reservation(getName(), "Double Room"));
+        system.processRequest();
+    }
+}
+
+public class UseCase11ConcurrentBookingSimulation {
+
+    public static void main(String[] args) {
+
+        BookingSystem system = new BookingSystem();
+
+        Thread t1 = new BookingThread(system, "Guest1");
+        Thread t2 = new BookingThread(system, "Guest2");
+        Thread t3 = new BookingThread(system, "Guest3");
+
+        t1.start();
+        t2.start();
+        t3.start();
+    }
+}
