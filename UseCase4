@@ -1,0 +1,74 @@
+import java.util.*;
+
+class Room {
+    String type;
+    double price;
+    String amenities;
+
+    Room(String type, double price, String amenities) {
+        this.type = type;
+        this.price = price;
+        this.amenities = amenities;
+    }
+
+    void display() {
+        System.out.println("Type: " + type);
+        System.out.println("Price: " + price);
+        System.out.println("Amenities: " + amenities);
+        System.out.println();
+    }
+}
+
+class Inventory {
+    private Map<String, Integer> availability = new HashMap<>();
+
+    void addRoom(String type, int count) {
+        availability.put(type, count);
+    }
+
+    int getAvailability(String type) {
+        return availability.getOrDefault(type, 0);
+    }
+
+    Set<String> getRoomTypes() {
+        return availability.keySet();
+    }
+}
+
+class SearchService {
+    private Inventory inventory;
+    private Map<String, Room> roomDetails;
+
+    SearchService(Inventory inventory, Map<String, Room> roomDetails) {
+        this.inventory = inventory;
+        this.roomDetails = roomDetails;
+    }
+
+    void searchRooms() {
+        for (String type : inventory.getRoomTypes()) {
+            int count = inventory.getAvailability(type);
+            if (count > 0 && roomDetails.containsKey(type)) {
+                roomDetails.get(type).display();
+            }
+        }
+    }
+}
+
+public class UseCase4RoomSearch {
+    public static void main(String[] args) {
+        Inventory inventory = new Inventory();
+
+        inventory.addRoom("Single", 5);
+        inventory.addRoom("Double", 0);
+        inventory.addRoom("Suite", 2);
+
+        Map<String, Room> roomDetails = new HashMap<>();
+        roomDetails.put("Single", new Room("Single", 2000, "WiFi, TV"));
+        roomDetails.put("Double", new Room("Double", 3500, "WiFi, TV, AC"));
+        roomDetails.put("Suite", new Room("Suite", 5000, "WiFi, TV, AC, Mini Bar"));
+
+        SearchService searchService = new SearchService(inventory, roomDetails);
+
+        searchService.searchRooms();
+    }
+}
